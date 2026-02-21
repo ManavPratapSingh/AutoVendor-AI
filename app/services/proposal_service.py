@@ -1,7 +1,7 @@
 """
 Proposal Service — Pitch Builder Layer.
 
-Takes strategy output + vendor info + lead profile and uses an LLM (via OpenRouter)
+Takes strategy output + vendor info + lead profile and uses an LLM (via Groq)
 to generate a complete pitch page as styled HTML content.
 """
 
@@ -19,7 +19,7 @@ from app.schemas.response import (
 )
 from app.services.pdf_service import convert_html_to_pdf
 
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
 PROPOSAL_SYSTEM_PROMPT = """You are a world-class sales copywriter and web designer. Your job is to generate a stunning, data-backed pitch page as complete HTML.
 
@@ -102,8 +102,8 @@ def build_pitch_page(
     """
     settings = get_settings()
     client = OpenAI(
-        api_key=settings.openrouter_api_key,
-        base_url=OPENROUTER_BASE_URL,
+        api_key=settings.groq_api_key,
+        base_url=GROQ_BASE_URL,
     )
 
     pitch_id = str(uuid.uuid4())
@@ -132,8 +132,9 @@ def build_pitch_page(
 Generate a compelling, data-backed pitch page for {company_profile.company_name} showcasing how {vendor_product.product_name} addresses their specific needs."""
 
     response = client.chat.completions.create(
-        model=settings.openrouter_model,
+        model=settings.groq_model,
         temperature=0.4,  # Slightly higher for creative copy
+        response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": PROPOSAL_SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},

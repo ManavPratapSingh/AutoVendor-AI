@@ -62,9 +62,9 @@ MOCK_STRATEGY_LLM_RESPONSE = {
 @patch("app.services.strategist_service.get_settings")
 def test_generate_strategy_returns_strategy_output(mock_settings, mock_openai_cls):
     """Should return a valid StrategyOutput from the LLM."""
-    mock_settings.return_value.openrouter_api_key = "test-key"
-    mock_settings.return_value.openrouter_model = "anthropic/claude-sonnet-4-20250514"
-    mock_settings.return_value.openrouter_temperature = 0.3
+    mock_settings.return_value.groq_api_key = "test-key"
+    mock_settings.return_value.groq_model = "llama-3.3-70b-versatile"
+    mock_settings.return_value.groq_temperature = 0.3
 
     mock_message = MagicMock()
     mock_message.content = json.dumps(MOCK_STRATEGY_LLM_RESPONSE)
@@ -93,9 +93,9 @@ def test_generate_strategy_returns_strategy_output(mock_settings, mock_openai_cl
 @patch("app.services.strategist_service.get_settings")
 def test_generate_strategy_passes_correct_data_to_llm(mock_settings, mock_openai_cls):
     """Should include both scout output and vendor info in the LLM prompt."""
-    mock_settings.return_value.openrouter_api_key = "test-key"
-    mock_settings.return_value.openrouter_model = "anthropic/claude-sonnet-4-20250514"
-    mock_settings.return_value.openrouter_temperature = 0.3
+    mock_settings.return_value.groq_api_key = "test-key"
+    mock_settings.return_value.groq_model = "llama-3.3-70b-versatile"
+    mock_settings.return_value.groq_temperature = 0.3
 
     mock_message = MagicMock()
     mock_message.content = json.dumps(MOCK_STRATEGY_LLM_RESPONSE)

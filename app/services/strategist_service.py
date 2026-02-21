@@ -1,7 +1,7 @@
 """
 Strategist Service — Alignment Engine.
 
-Takes ScoutOutput + VendorProduct and uses an LLM (via OpenRouter) to generate
+Takes ScoutOutput + VendorProduct and uses an LLM (via Groq) to generate
 strategic alignment analysis: feature-to-pain mapping, opportunity scoring,
 and pitch angle recommendation.
 """
@@ -13,7 +13,7 @@ from app.config import get_settings
 from app.schemas.request import VendorProduct
 from app.schemas.response import ScoutOutput, StrategyOutput
 
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
 STRATEGIST_SYSTEM_PROMPT = """You are a strategic sales alignment expert. Your job is to analyze a lead company's profile and map a vendor's product features to the lead's pain signals to find the best sales opportunity.
 
@@ -84,8 +84,8 @@ def generate_strategy(scout_output: ScoutOutput, vendor_product: VendorProduct) 
     """
     settings = get_settings()
     client = OpenAI(
-        api_key=settings.openrouter_api_key,
-        base_url=OPENROUTER_BASE_URL,
+        api_key=settings.groq_api_key,
+        base_url=GROQ_BASE_URL,
     )
 
     user_prompt = f"""## Lead Company Intelligence
@@ -101,8 +101,9 @@ def generate_strategy(scout_output: ScoutOutput, vendor_product: VendorProduct) 
 Analyze the alignment between this vendor's product and the lead company's needs. Map each vendor feature to the most relevant pain signal and generate a strategic recommendation."""
 
     response = client.chat.completions.create(
-        model=settings.openrouter_model,
-        temperature=settings.openrouter_temperature,
+        model=settings.groq_model,
+        temperature=settings.groq_temperature,
+        response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": STRATEGIST_SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},

@@ -88,7 +88,9 @@ def test_generate_pitch_full_pipeline(
     result = generate_pitch(MOCK_REQUEST)
 
     # Verify each layer was called once
-    mock_tavily.assert_called_once_with("https://acme.com/")
+    mock_tavily.assert_called_once()
+    actual_url = str(mock_tavily.call_args[0][0])
+    assert actual_url == "https://acme.com/"
     mock_scout.assert_called_once_with(MOCK_TAVILY_DATA)
     mock_strategist.assert_called_once_with(MOCK_SCOUT, MOCK_REQUEST.vendor_product)
     mock_proposal.assert_called_once_with(

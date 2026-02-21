@@ -68,8 +68,8 @@ MOCK_PROPOSAL_LLM_RESPONSE = {
 @patch("app.services.proposal_service.get_settings")
 def test_build_pitch_page_returns_pitch_response(mock_settings, mock_openai_cls, mock_pdf):
     """Should return a valid PitchResponse with HTML content and structured sections."""
-    mock_settings.return_value.openrouter_api_key = "test-key"
-    mock_settings.return_value.openrouter_model = "anthropic/claude-sonnet-4-20250514"
+    mock_settings.return_value.groq_api_key = "test-key"
+    mock_settings.return_value.groq_model = "llama-3.3-70b-versatile"
 
     mock_message = MagicMock()
     mock_message.content = json.dumps(MOCK_PROPOSAL_LLM_RESPONSE)
@@ -101,8 +101,8 @@ def test_build_pitch_page_returns_pitch_response(mock_settings, mock_openai_cls,
 @patch("app.services.proposal_service.get_settings")
 def test_build_pitch_page_handles_pdf_failure(mock_settings, mock_openai_cls, mock_pdf):
     """Should still return a valid response even if PDF conversion fails."""
-    mock_settings.return_value.openrouter_api_key = "test-key"
-    mock_settings.return_value.openrouter_model = "anthropic/claude-sonnet-4-20250514"
+    mock_settings.return_value.groq_api_key = "test-key"
+    mock_settings.return_value.groq_model = "llama-3.3-70b-versatile"
 
     mock_message = MagicMock()
     mock_message.content = json.dumps(MOCK_PROPOSAL_LLM_RESPONSE)

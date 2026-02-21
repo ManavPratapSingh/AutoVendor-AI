@@ -1,7 +1,7 @@
 """
 Scout Service — Structured Extraction Layer.
 
-Takes raw Tavily search results and uses an LLM (via OpenRouter) to extract
+Takes raw Tavily search results and uses an LLM (via Groq) to extract
 structured business intelligence as a ScoutOutput JSON object.
 """
 
@@ -11,7 +11,7 @@ from openai import OpenAI
 from app.config import get_settings
 from app.schemas.response import ScoutOutput
 
-OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+GROQ_BASE_URL = "https://api.groq.com/openai/v1"
 
 SCOUT_SYSTEM_PROMPT = """You are a business intelligence analyst. Your job is to analyze raw web search results about a company and extract structured business intelligence.
 
@@ -82,16 +82,17 @@ def extract_business_intelligence(tavily_results: dict) -> ScoutOutput:
     """
     settings = get_settings()
     client = OpenAI(
-        api_key=settings.openrouter_api_key,
-        base_url=OPENROUTER_BASE_URL,
+        api_key=settings.groq_api_key,
+        base_url=GROQ_BASE_URL,
     )
 
     # Build context from Tavily results
     search_context = _build_search_context(tavily_results)
 
     response = client.chat.completions.create(
-        model=settings.openrouter_model,
-        temperature=settings.openrouter_temperature,
+        model=settings.groq_model,
+        temperature=settings.groq_temperature,
+        response_format={"type": "json_object"},
         messages=[
             {"role": "system", "content": SCOUT_SYSTEM_PROMPT},
             {

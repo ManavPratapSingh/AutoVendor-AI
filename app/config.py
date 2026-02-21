@@ -11,12 +11,12 @@ class Settings(BaseSettings):
 
     # --- API Keys ---
     tavily_api_key: str = ""
-    openrouter_api_key: str = ""
+    groq_api_key: str = ""
     apitemplate_api_key: str = ""
 
-    # --- OpenRouter Model Config ---
-    openrouter_model: str = "google/gemini-2.0-flash-lite-preview-02-05:free"
-    openrouter_temperature: float = 0.3
+    # --- Groq Model Config ---
+    groq_model: str = "llama-3.3-70b-versatile"
+    groq_temperature: float = 0.3
 
     model_config = {
         "env_file": ".env",

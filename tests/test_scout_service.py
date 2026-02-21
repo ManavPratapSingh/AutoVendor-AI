@@ -44,9 +44,9 @@ MOCK_SCOUT_LLM_RESPONSE = {
 @patch("app.services.scout_service.get_settings")
 def test_extract_business_intelligence_returns_scout_output(mock_settings, mock_openai_cls):
     """Should return a valid ScoutOutput parsed from the LLM response."""
-    mock_settings.return_value.openrouter_api_key = "test-key"
-    mock_settings.return_value.openrouter_model = "anthropic/claude-sonnet-4-20250514"
-    mock_settings.return_value.openrouter_temperature = 0.3
+    mock_settings.return_value.groq_api_key = "test-key"
+    mock_settings.return_value.groq_model = "llama-3.3-70b-versatile"
+    mock_settings.return_value.groq_temperature = 0.3
 
     mock_message = MagicMock()
     mock_message.content = json.dumps(MOCK_SCOUT_LLM_RESPONSE)
