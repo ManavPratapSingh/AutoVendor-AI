@@ -1,20 +1,23 @@
 """
 Strategist Service — Alignment Engine.
 
-Takes ScoutOutput + VendorProduct and uses Claude to generate strategic
-alignment analysis: feature-to-pain mapping, opportunity scoring,
+Takes ScoutOutput + VendorProduct and uses an LLM (via OpenRouter) to generate
+strategic alignment analysis: feature-to-pain mapping, opportunity scoring,
 and pitch angle recommendation.
 """
 
 import json
-import anthropic
+import re
+from openai import OpenAI
 from app.config import get_settings
 from app.schemas.request import VendorProduct
 from app.schemas.response import ScoutOutput, StrategyOutput
 
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
 STRATEGIST_SYSTEM_PROMPT = """You are a strategic sales alignment expert. Your job is to analyze a lead company's profile and map a vendor's product features to the lead's pain signals to find the best sales opportunity.
 
-You MUST respond with ONLY valid JSON (no markdown, no explanation) matching this exact schema:
+You MUST respond with ONLY valid JSON (no markdown fences, no explanation) matching this exact schema:
 {
   "opportunity_score": 0,
   "alignment_matrix": [
@@ -41,6 +44,33 @@ Rules:
 - Respond with ONLY the JSON object, nothing else."""
 
 
+def _extract_json(text: str) -> dict:
+    """Extract JSON from LLM response, handling markdown fences and extra text."""
+    text = text.strip()
+
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", text, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(1).strip())
+        except json.JSONDecodeError:
+            pass
+
+    brace_start = text.find("{")
+    brace_end = text.rfind("}")
+    if brace_start != -1 and brace_end != -1:
+        try:
+            return json.loads(text[brace_start : brace_end + 1])
+        except json.JSONDecodeError:
+            pass
+
+    raise ValueError(f"Could not extract valid JSON from LLM response: {text[:500]}")
+
+
 def generate_strategy(scout_output: ScoutOutput, vendor_product: VendorProduct) -> StrategyOutput:
     """
     Generate strategic alignment analysis between lead and vendor.
@@ -53,7 +83,10 @@ def generate_strategy(scout_output: ScoutOutput, vendor_product: VendorProduct) 
         StrategyOutput with opportunity scoring and alignment matrix.
     """
     settings = get_settings()
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    client = OpenAI(
+        api_key=settings.openrouter_api_key,
+        base_url=OPENROUTER_BASE_URL,
+    )
 
     user_prompt = f"""## Lead Company Intelligence
 {json.dumps(scout_output.model_dump(), indent=2)}
@@ -67,16 +100,15 @@ def generate_strategy(scout_output: ScoutOutput, vendor_product: VendorProduct) 
 
 Analyze the alignment between this vendor's product and the lead company's needs. Map each vendor feature to the most relevant pain signal and generate a strategic recommendation."""
 
-    response = client.messages.create(
-        model=settings.anthropic_model,
-        max_tokens=4096,
-        temperature=settings.anthropic_temperature,
-        system=STRATEGIST_SYSTEM_PROMPT,
+    response = client.chat.completions.create(
+        model=settings.openrouter_model,
+        temperature=settings.openrouter_temperature,
         messages=[
+            {"role": "system", "content": STRATEGIST_SYSTEM_PROMPT},
             {"role": "user", "content": user_prompt},
         ],
     )
 
-    raw_text = response.content[0].text
-    raw_json = json.loads(raw_text)
+    raw_text = response.choices[0].message.content or ""
+    raw_json = _extract_json(raw_text)
     return StrategyOutput(**raw_json)

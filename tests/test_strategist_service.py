@@ -58,23 +58,26 @@ MOCK_STRATEGY_LLM_RESPONSE = {
 
 # ── Tests ───────────────────────────────────────────────────────────
 
-@patch("app.services.strategist_service.anthropic.Anthropic")
+@patch("app.services.strategist_service.OpenAI")
 @patch("app.services.strategist_service.get_settings")
-def test_generate_strategy_returns_strategy_output(mock_settings, mock_anthropic_cls):
+def test_generate_strategy_returns_strategy_output(mock_settings, mock_openai_cls):
     """Should return a valid StrategyOutput from the LLM."""
-    mock_settings.return_value.anthropic_api_key = "test-key"
-    mock_settings.return_value.anthropic_model = "claude-sonnet-4-20250514"
-    mock_settings.return_value.anthropic_temperature = 0.3
+    mock_settings.return_value.openrouter_api_key = "test-key"
+    mock_settings.return_value.openrouter_model = "anthropic/claude-sonnet-4-20250514"
+    mock_settings.return_value.openrouter_temperature = 0.3
 
-    mock_content_block = MagicMock()
-    mock_content_block.text = json.dumps(MOCK_STRATEGY_LLM_RESPONSE)
+    mock_message = MagicMock()
+    mock_message.content = json.dumps(MOCK_STRATEGY_LLM_RESPONSE)
+
+    mock_choice = MagicMock()
+    mock_choice.message = mock_message
 
     mock_response = MagicMock()
-    mock_response.content = [mock_content_block]
+    mock_response.choices = [mock_choice]
 
     mock_client = MagicMock()
-    mock_client.messages.create.return_value = mock_response
-    mock_anthropic_cls.return_value = mock_client
+    mock_client.chat.completions.create.return_value = mock_response
+    mock_openai_cls.return_value = mock_client
 
     result = generate_strategy(MOCK_SCOUT_OUTPUT, MOCK_VENDOR_PRODUCT)
 
@@ -86,29 +89,32 @@ def test_generate_strategy_returns_strategy_output(mock_settings, mock_anthropic
     assert result.value_proposition != ""
 
 
-@patch("app.services.strategist_service.anthropic.Anthropic")
+@patch("app.services.strategist_service.OpenAI")
 @patch("app.services.strategist_service.get_settings")
-def test_generate_strategy_passes_correct_data_to_llm(mock_settings, mock_anthropic_cls):
+def test_generate_strategy_passes_correct_data_to_llm(mock_settings, mock_openai_cls):
     """Should include both scout output and vendor info in the LLM prompt."""
-    mock_settings.return_value.anthropic_api_key = "test-key"
-    mock_settings.return_value.anthropic_model = "claude-sonnet-4-20250514"
-    mock_settings.return_value.anthropic_temperature = 0.3
+    mock_settings.return_value.openrouter_api_key = "test-key"
+    mock_settings.return_value.openrouter_model = "anthropic/claude-sonnet-4-20250514"
+    mock_settings.return_value.openrouter_temperature = 0.3
 
-    mock_content_block = MagicMock()
-    mock_content_block.text = json.dumps(MOCK_STRATEGY_LLM_RESPONSE)
+    mock_message = MagicMock()
+    mock_message.content = json.dumps(MOCK_STRATEGY_LLM_RESPONSE)
+
+    mock_choice = MagicMock()
+    mock_choice.message = mock_message
 
     mock_response = MagicMock()
-    mock_response.content = [mock_content_block]
+    mock_response.choices = [mock_choice]
 
     mock_client = MagicMock()
-    mock_client.messages.create.return_value = mock_response
-    mock_anthropic_cls.return_value = mock_client
+    mock_client.chat.completions.create.return_value = mock_response
+    mock_openai_cls.return_value = mock_client
 
     generate_strategy(MOCK_SCOUT_OUTPUT, MOCK_VENDOR_PRODUCT)
 
-    call_args = mock_client.messages.create.call_args
+    call_args = mock_client.chat.completions.create.call_args
     messages = call_args.kwargs["messages"]
-    user_msg = messages[0]["content"]
+    user_msg = messages[1]["content"]
 
     assert "Acme Corp" in user_msg
     assert "DataViz Pro" in user_msg

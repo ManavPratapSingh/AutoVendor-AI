@@ -40,23 +40,26 @@ MOCK_SCOUT_LLM_RESPONSE = {
 
 # ── Tests ───────────────────────────────────────────────────────────
 
-@patch("app.services.scout_service.anthropic.Anthropic")
+@patch("app.services.scout_service.OpenAI")
 @patch("app.services.scout_service.get_settings")
-def test_extract_business_intelligence_returns_scout_output(mock_settings, mock_anthropic_cls):
+def test_extract_business_intelligence_returns_scout_output(mock_settings, mock_openai_cls):
     """Should return a valid ScoutOutput parsed from the LLM response."""
-    mock_settings.return_value.anthropic_api_key = "test-key"
-    mock_settings.return_value.anthropic_model = "claude-sonnet-4-20250514"
-    mock_settings.return_value.anthropic_temperature = 0.3
+    mock_settings.return_value.openrouter_api_key = "test-key"
+    mock_settings.return_value.openrouter_model = "anthropic/claude-sonnet-4-20250514"
+    mock_settings.return_value.openrouter_temperature = 0.3
 
-    mock_content_block = MagicMock()
-    mock_content_block.text = json.dumps(MOCK_SCOUT_LLM_RESPONSE)
+    mock_message = MagicMock()
+    mock_message.content = json.dumps(MOCK_SCOUT_LLM_RESPONSE)
+
+    mock_choice = MagicMock()
+    mock_choice.message = mock_message
 
     mock_response = MagicMock()
-    mock_response.content = [mock_content_block]
+    mock_response.choices = [mock_choice]
 
     mock_client = MagicMock()
-    mock_client.messages.create.return_value = mock_response
-    mock_anthropic_cls.return_value = mock_client
+    mock_client.chat.completions.create.return_value = mock_response
+    mock_openai_cls.return_value = mock_client
 
     result = extract_business_intelligence(MOCK_TAVILY_RESULTS)
 

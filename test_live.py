@@ -31,7 +31,7 @@ try:
     response = httpx.post(
         "http://127.0.0.1:8000/generate-pitch",
         json=payload,
-        timeout=120.0,  # LLM calls can take a while
+        timeout=300.0,  # 3 sequential LLM calls — needs generous timeout
     )
 
     print(f"\n📡 Status: {response.status_code}")

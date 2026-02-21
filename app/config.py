@@ -11,12 +11,12 @@ class Settings(BaseSettings):
 
     # --- API Keys ---
     tavily_api_key: str = ""
-    anthropic_api_key: str = ""
+    openrouter_api_key: str = ""
     apitemplate_api_key: str = ""
 
-    # --- Anthropic Model Config ---
-    anthropic_model: str = "claude-sonnet-4-20250514"
-    anthropic_temperature: float = 0.3
+    # --- OpenRouter Model Config ---
+    openrouter_model: str = "google/gemini-2.0-flash-lite-preview-02-05:free"
+    openrouter_temperature: float = 0.3
 
     model_config = {
         "env_file": ".env",

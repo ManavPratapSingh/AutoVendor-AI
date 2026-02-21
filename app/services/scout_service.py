@@ -1,18 +1,21 @@
 """
 Scout Service — Structured Extraction Layer.
 
-Takes raw Tavily search results and uses Claude to extract structured
-business intelligence as a ScoutOutput JSON object.
+Takes raw Tavily search results and uses an LLM (via OpenRouter) to extract
+structured business intelligence as a ScoutOutput JSON object.
 """
 
 import json
-import anthropic
+import re
+from openai import OpenAI
 from app.config import get_settings
 from app.schemas.response import ScoutOutput
 
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+
 SCOUT_SYSTEM_PROMPT = """You are a business intelligence analyst. Your job is to analyze raw web search results about a company and extract structured business intelligence.
 
-You MUST respond with ONLY valid JSON (no markdown, no explanation) matching this exact schema:
+You MUST respond with ONLY valid JSON (no markdown fences, no explanation) matching this exact schema:
 {
   "company_profile": {
     "company_name": "string",
@@ -37,6 +40,36 @@ Rules:
 - Respond with ONLY the JSON object, nothing else."""
 
 
+def _extract_json(text: str) -> dict:
+    """Extract JSON from LLM response, handling markdown fences and extra text."""
+    text = text.strip()
+
+    # Try direct parse first
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+
+    # Try extracting from markdown code fences
+    match = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", text, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(1).strip())
+        except json.JSONDecodeError:
+            pass
+
+    # Try finding first { ... } block
+    brace_start = text.find("{")
+    brace_end = text.rfind("}")
+    if brace_start != -1 and brace_end != -1:
+        try:
+            return json.loads(text[brace_start : brace_end + 1])
+        except json.JSONDecodeError:
+            pass
+
+    raise ValueError(f"Could not extract valid JSON from LLM response: {text[:500]}")
+
+
 def extract_business_intelligence(tavily_results: dict) -> ScoutOutput:
     """
     Convert raw Tavily search results into structured business intelligence.
@@ -48,17 +81,19 @@ def extract_business_intelligence(tavily_results: dict) -> ScoutOutput:
         ScoutOutput with structured company data.
     """
     settings = get_settings()
-    client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+    client = OpenAI(
+        api_key=settings.openrouter_api_key,
+        base_url=OPENROUTER_BASE_URL,
+    )
 
     # Build context from Tavily results
     search_context = _build_search_context(tavily_results)
 
-    response = client.messages.create(
-        model=settings.anthropic_model,
-        max_tokens=4096,
-        temperature=settings.anthropic_temperature,
-        system=SCOUT_SYSTEM_PROMPT,
+    response = client.chat.completions.create(
+        model=settings.openrouter_model,
+        temperature=settings.openrouter_temperature,
         messages=[
+            {"role": "system", "content": SCOUT_SYSTEM_PROMPT},
             {
                 "role": "user",
                 "content": f"Analyze the following search results and extract business intelligence:\n\n{search_context}",
@@ -66,8 +101,8 @@ def extract_business_intelligence(tavily_results: dict) -> ScoutOutput:
         ],
     )
 
-    raw_text = response.content[0].text
-    raw_json = json.loads(raw_text)
+    raw_text = response.choices[0].message.content or ""
+    raw_json = _extract_json(raw_text)
     return ScoutOutput(**raw_json)
 
 

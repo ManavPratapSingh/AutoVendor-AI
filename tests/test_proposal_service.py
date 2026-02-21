@@ -64,22 +64,25 @@ MOCK_PROPOSAL_LLM_RESPONSE = {
 # ── Tests ───────────────────────────────────────────────────────────
 
 @patch("app.services.proposal_service.convert_html_to_pdf")
-@patch("app.services.proposal_service.anthropic.Anthropic")
+@patch("app.services.proposal_service.OpenAI")
 @patch("app.services.proposal_service.get_settings")
-def test_build_pitch_page_returns_pitch_response(mock_settings, mock_anthropic_cls, mock_pdf):
+def test_build_pitch_page_returns_pitch_response(mock_settings, mock_openai_cls, mock_pdf):
     """Should return a valid PitchResponse with HTML content and structured sections."""
-    mock_settings.return_value.anthropic_api_key = "test-key"
-    mock_settings.return_value.anthropic_model = "claude-sonnet-4-20250514"
+    mock_settings.return_value.openrouter_api_key = "test-key"
+    mock_settings.return_value.openrouter_model = "anthropic/claude-sonnet-4-20250514"
 
-    mock_content_block = MagicMock()
-    mock_content_block.text = json.dumps(MOCK_PROPOSAL_LLM_RESPONSE)
+    mock_message = MagicMock()
+    mock_message.content = json.dumps(MOCK_PROPOSAL_LLM_RESPONSE)
+
+    mock_choice = MagicMock()
+    mock_choice.message = mock_message
 
     mock_response = MagicMock()
-    mock_response.content = [mock_content_block]
+    mock_response.choices = [mock_choice]
 
     mock_client = MagicMock()
-    mock_client.messages.create.return_value = mock_response
-    mock_anthropic_cls.return_value = mock_client
+    mock_client.chat.completions.create.return_value = mock_response
+    mock_openai_cls.return_value = mock_client
 
     mock_pdf.return_value = "https://cdn.apitemplate.io/test.pdf"
 
@@ -94,22 +97,25 @@ def test_build_pitch_page_returns_pitch_response(mock_settings, mock_anthropic_c
 
 
 @patch("app.services.proposal_service.convert_html_to_pdf")
-@patch("app.services.proposal_service.anthropic.Anthropic")
+@patch("app.services.proposal_service.OpenAI")
 @patch("app.services.proposal_service.get_settings")
-def test_build_pitch_page_handles_pdf_failure(mock_settings, mock_anthropic_cls, mock_pdf):
+def test_build_pitch_page_handles_pdf_failure(mock_settings, mock_openai_cls, mock_pdf):
     """Should still return a valid response even if PDF conversion fails."""
-    mock_settings.return_value.anthropic_api_key = "test-key"
-    mock_settings.return_value.anthropic_model = "claude-sonnet-4-20250514"
+    mock_settings.return_value.openrouter_api_key = "test-key"
+    mock_settings.return_value.openrouter_model = "anthropic/claude-sonnet-4-20250514"
 
-    mock_content_block = MagicMock()
-    mock_content_block.text = json.dumps(MOCK_PROPOSAL_LLM_RESPONSE)
+    mock_message = MagicMock()
+    mock_message.content = json.dumps(MOCK_PROPOSAL_LLM_RESPONSE)
+
+    mock_choice = MagicMock()
+    mock_choice.message = mock_message
 
     mock_response = MagicMock()
-    mock_response.content = [mock_content_block]
+    mock_response.choices = [mock_choice]
 
     mock_client = MagicMock()
-    mock_client.messages.create.return_value = mock_response
-    mock_anthropic_cls.return_value = mock_client
+    mock_client.chat.completions.create.return_value = mock_response
+    mock_openai_cls.return_value = mock_client
 
     # Simulate PDF conversion failure
     mock_pdf.side_effect = Exception("API Template service unavailable")
