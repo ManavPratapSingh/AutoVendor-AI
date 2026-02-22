@@ -7,6 +7,8 @@ Main entry point with the /generate-pitch endpoint and health check.
 import logging
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from app.schemas.request import PitchRequest
 from app.schemas.response import PitchResponse
 from app.pipeline import generate_pitch
@@ -31,6 +33,15 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Serve frontend static files (CSS, JS)
+app.mount("/static", StaticFiles(directory="frontend"), name="static")
+
+
+@app.get("/")
+def serve_frontend():
+    """Serve the frontend single-page app."""
+    return FileResponse("frontend/index.html")
 
 
 @app.get("/health")

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoVendor AI — Intelligent Pitch Generator</title>
+  <meta name="description" content="Transform a lead URL into a data-backed strategic pitch page using AI.">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-container">
+
+    <!-- ═══ Header ═══ -->
+    <header class="app-header">
+      <div class="app-logo">
+        <div class="app-logo-icon">⚡</div>
+        <span class="app-logo-text">AutoVendor AI</span>
+      </div>
+      <p class="app-tagline">Transform any lead URL into a data-backed strategic pitch — powered by AI</p>
+    </header>
+
+    <!-- ═══ Input Form View ═══ -->
+    <div id="formView">
+      <div class="glass-card">
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+          <div class="progress-step active" id="progressStep1">
+            <span class="step-number">1</span>
+            Lead URL
+          </div>
+          <div class="progress-connector"></div>
+          <div class="progress-step" id="progressStep2">
+            <span class="step-number">2</span>
+            Product Info
+          </div>
+          <div class="progress-connector"></div>
+          <div class="progress-step" id="progressStep3">
+            <span class="step-number">3</span>
+            Generate
+          </div>
+        </div>
+
+        <form id="pitchForm" autocomplete="off">
+
+          <!-- Step 1: Lead URL -->
+          <div class="form-section active" id="step1">
+            <h3 class="section-title">Target Lead</h3>
+            <p class="section-subtitle">Enter the website URL of the company you want to pitch to.</p>
+
+            <div class="form-group">
+              <label class="form-label" for="leadUrl">Company URL</label>
+              <div class="url-input-group">
+                <span class="url-icon">🔗</span>
+                <input
+                  type="url"
+                  id="leadUrl"
+                  class="form-input"
+                  placeholder="https://stripe.com"
+                  required
+                >
+              </div>
+              <p class="form-hint">We'll research this company to build a tailored pitch.</p>
+            </div>
+
+            <div class="form-actions" style="justify-content: flex-end;">
+              <button type="button" class="btn btn-primary" onclick="goToStep(2)">
+                Continue
+                <span class="btn-icon">→</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 2: Product Details -->
+          <div class="form-section" id="step2">
+            <h3 class="section-title">Your Product</h3>
+            <p class="section-subtitle">Tell us about the product you want to pitch.</p>
+
+            <div class="form-group">
+              <label class="form-label" for="productName">Product Name</label>
+              <input type="text" id="productName" class="form-input" placeholder="PayFlow Pro" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="shortDescription">Short Description</label>
+              <textarea id="shortDescription" class="form-textarea" rows="2" placeholder="AI-powered payment optimization platform that increases revenue for SaaS companies" required></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="targetCustomer">Target Customer</label>
+              <input type="text" id="targetCustomer" class="form-input" placeholder="SaaS companies processing online payments" required>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="goToStep(1)">
+                <span class="btn-icon">←</span>
+                Back
+              </button>
+              <button type="button" class="btn btn-primary" onclick="goToStep(3)">
+                Continue
+                <span class="btn-icon">→</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Step 3: Features & Generate -->
+          <div class="form-section" id="step3">
+            <h3 class="section-title">Features & Differentiator</h3>
+            <p class="section-subtitle">Add your core features and what makes your product unique.</p>
+
+            <div class="form-group">
+              <label class="form-label">Core Features</label>
+              <div class="feature-input-wrapper">
+                <input type="text" id="featureInput" class="form-input" placeholder="Type a feature and press Enter or +"
+                  onkeydown="if(event.key==='Enter'){event.preventDefault();addFeature();}">
+                <button type="button" class="btn-add-feature" onclick="addFeature()" title="Add feature">+</button>
+              </div>
+              <div class="feature-tags" id="featureTags"></div>
+              <p class="form-hint">Add at least one core feature.</p>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="differentiator">Unique Differentiator</label>
+              <textarea id="differentiator" class="form-textarea" rows="2" placeholder="ML-based payment success rate optimization that increases revenue by 5-15%" required></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn btn-secondary" onclick="goToStep(2)">
+                <span class="btn-icon">←</span>
+                Back
+              </button>
+              <button type="submit" class="btn btn-primary" id="generateBtn">
+                <span class="btn-icon">⚡</span>
+                Generate Pitch
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- ═══ Processing View ═══ -->
+    <div class="processing-view" id="processingView">
+      <div class="glass-card">
+        <div class="processing-header">
+          <h2>Generating Your Pitch</h2>
+          <p>Our AI pipeline is analyzing the lead and crafting a strategic pitch...</p>
+        </div>
+
+        <div class="pipeline-steps">
+          <div class="pipeline-step" id="pipelineStep1">
+            <div class="pipeline-step-icon">🔍</div>
+            <div class="pipeline-step-info">
+              <div class="pipeline-step-name">Web Research</div>
+              <div class="pipeline-step-desc">Scanning the lead's website for business intelligence</div>
+            </div>
+            <div class="pipeline-step-status" id="pipelineStatus1">Waiting</div>
+          </div>
+
+          <div class="pipeline-step" id="pipelineStep2">
+            <div class="pipeline-step-icon">🧠</div>
+            <div class="pipeline-step-info">
+              <div class="pipeline-step-name">Scout Extraction</div>
+              <div class="pipeline-step-desc">Structuring company profile, pain signals & tech stack</div>
+            </div>
+            <div class="pipeline-step-status" id="pipelineStatus2">Waiting</div>
+          </div>
+
+          <div class="pipeline-step" id="pipelineStep3">
+            <div class="pipeline-step-icon">⚡</div>
+            <div class="pipeline-step-info">
+              <div class="pipeline-step-name">Strategic Alignment</div>
+              <div class="pipeline-step-desc">Mapping your features to their pain points</div>
+            </div>
+            <div class="pipeline-step-status" id="pipelineStatus3">Waiting</div>
+          </div>
+
+          <div class="pipeline-step" id="pipelineStep4">
+            <div class="pipeline-step-icon">🎨</div>
+            <div class="pipeline-step-info">
+              <div class="pipeline-step-name">Pitch Generation</div>
+              <div class="pipeline-step-desc">Building your personalized HTML pitch page</div>
+            </div>
+            <div class="pipeline-step-status" id="pipelineStatus4">Waiting</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ Results View ═══ -->
+    <div class="results-view" id="resultsView">
+      <div class="results-header">
+        <h2>✨ Your Pitch is Ready</h2>
+        <div class="results-meta">
+          <span class="pitch-id-badge" id="pitchIdBadge"></span>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('content')" id="tabContent">📊 Content Analysis</button>
+        <button class="tab-btn" onclick="switchTab('preview')" id="tabPreview">🖥️ HTML Preview</button>
+      </div>
+
+      <!-- Tab: Content Analysis -->
+      <div class="tab-panel active" id="panelContent">
+        <div class="glass-card">
+          <div class="content-grid">
+            <div class="content-card full-width">
+              <div class="content-card-label">Hero Headline</div>
+              <div class="content-card-value" id="resHeadline" style="font-size:18px;font-weight:700;"></div>
+            </div>
+            <div class="content-card full-width">
+              <div class="content-card-label">Subheadline</div>
+              <div class="content-card-value" id="resSubheadline"></div>
+            </div>
+            <div class="content-card">
+              <div class="content-card-label">Problem Framing</div>
+              <div class="content-card-value" id="resProblem"></div>
+            </div>
+            <div class="content-card">
+              <div class="content-card-label">Solution Positioning</div>
+              <div class="content-card-value" id="resSolution"></div>
+            </div>
+            <div class="content-card full-width">
+              <div class="content-card-label">Quantified Benefits</div>
+              <ul class="benefits-list" id="resBenefits"></ul>
+            </div>
+            <div class="content-card">
+              <div class="content-card-label">Social Proof</div>
+              <div class="content-card-value" id="resSocial"></div>
+            </div>
+            <div class="content-card">
+              <div class="content-card-label">Call to Action</div>
+              <div class="content-card-value" id="resCta"></div>
+              <div class="content-card-value" id="resCtaSub" style="font-size:13px;color:var(--text-muted);margin-top:4px;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab: HTML Preview -->
+      <div class="tab-panel" id="panelPreview">
+        <div class="preview-actions">
+          <button class="btn btn-secondary btn-sm" onclick="copyHtml()">📋 Copy HTML</button>
+          <button class="btn btn-secondary btn-sm" onclick="downloadHtml()">⬇️ Download HTML</button>
+          <button class="btn btn-secondary btn-sm" onclick="openInNewTab()">🔗 Open in New Tab</button>
+        </div>
+        <iframe id="htmlPreviewFrame" class="html-preview-frame" sandbox="allow-same-origin"></iframe>
+      </div>
+
+      <!-- New Pitch Button -->
+      <div style="text-align:center;margin-top:28px;">
+        <button class="btn btn-primary" onclick="resetForm()">
+          <span class="btn-icon">⚡</span>
+          Generate Another Pitch
+        </button>
+      </div>
+    </div>
+
+    <!-- ═══ Error View ═══ -->
+    <div class="error-view" id="errorView">
+      <div class="glass-card">
+        <div class="error-icon">⚠️</div>
+        <h3 style="margin-bottom:8px;">Something went wrong</h3>
+        <p class="error-message">The pipeline encountered an error. Please check your configuration and try again.</p>
+        <div class="error-detail" id="errorDetail"></div>
+        <button class="btn btn-primary" onclick="resetForm()">
+          <span class="btn-icon">←</span>
+          Try Again
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
