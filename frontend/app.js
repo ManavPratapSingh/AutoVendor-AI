@@ -6,7 +6,7 @@
 // ── API Configuration ──────────────────────────────────────────────
 // Set this to your Railway backend URL for production deployment.
 // Leave empty for local development (same-origin).
-const API_BASE = ''; // e.g. 'https://autovendor-ai-production.up.railway.app'
+const API_BASE = 'https://autovendor-ai-production.up.railway.app'; // Railway backend
 
 // ── State ──────────────────────────────────────────────────────────
 let currentStep = 1;
