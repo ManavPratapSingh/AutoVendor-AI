@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>AutoVendor AI — Intelligent Pitch Generator</title>
   <meta name="description" content="Transform a lead URL into a data-backed strategic pitch page using AI.">
-  <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
   <div class="app-container">
 
@@ -52,13 +54,7 @@
               <label class="form-label" for="leadUrl">Company URL</label>
               <div class="url-input-group">
                 <span class="url-icon">🔗</span>
-                <input
-                  type="url"
-                  id="leadUrl"
-                  class="form-input"
-                  placeholder="https://stripe.com"
-                  required
-                >
+                <input type="url" id="leadUrl" class="form-input" placeholder="https://stripe.com" required>
               </div>
               <p class="form-hint">We'll research this company to build a tailored pitch.</p>
             </div>
@@ -83,12 +79,15 @@
 
             <div class="form-group">
               <label class="form-label" for="shortDescription">Short Description</label>
-              <textarea id="shortDescription" class="form-textarea" rows="2" placeholder="AI-powered payment optimization platform that increases revenue for SaaS companies" required></textarea>
+              <textarea id="shortDescription" class="form-textarea" rows="2"
+                placeholder="AI-powered payment optimization platform that increases revenue for SaaS companies"
+                required></textarea>
             </div>
 
             <div class="form-group">
               <label class="form-label" for="targetCustomer">Target Customer</label>
-              <input type="text" id="targetCustomer" class="form-input" placeholder="SaaS companies processing online payments" required>
+              <input type="text" id="targetCustomer" class="form-input"
+                placeholder="SaaS companies processing online payments" required>
             </div>
 
             <div class="form-actions">
@@ -111,7 +110,8 @@
             <div class="form-group">
               <label class="form-label">Core Features</label>
               <div class="feature-input-wrapper">
-                <input type="text" id="featureInput" class="form-input" placeholder="Type a feature and press Enter or +"
+                <input type="text" id="featureInput" class="form-input"
+                  placeholder="Type a feature and press Enter or +"
                   onkeydown="if(event.key==='Enter'){event.preventDefault();addFeature();}">
                 <button type="button" class="btn-add-feature" onclick="addFeature()" title="Add feature">+</button>
               </div>
@@ -121,7 +121,9 @@
 
             <div class="form-group">
               <label class="form-label" for="differentiator">Unique Differentiator</label>
-              <textarea id="differentiator" class="form-textarea" rows="2" placeholder="ML-based payment success rate optimization that increases revenue by 5-15%" required></textarea>
+              <textarea id="differentiator" class="form-textarea" rows="2"
+                placeholder="ML-based payment success rate optimization that increases revenue by 5-15%"
+                required></textarea>
             </div>
 
             <div class="form-actions">
@@ -234,7 +236,8 @@
             <div class="content-card">
               <div class="content-card-label">Call to Action</div>
               <div class="content-card-value" id="resCta"></div>
-              <div class="content-card-value" id="resCtaSub" style="font-size:13px;color:var(--text-muted);margin-top:4px;"></div>
+              <div class="content-card-value" id="resCtaSub"
+                style="font-size:13px;color:var(--text-muted);margin-top:4px;"></div>
             </div>
           </div>
         </div>
@@ -275,6 +278,7 @@
 
   </div>
 
-  <script src="/static/app.js"></script>
+  <script src="./app.js"></script>
 </body>
+
 </html>
