@@ -3,6 +3,11 @@
    Handles form navigation, API calls, pipeline animation, results
    ═══════════════════════════════════════════════════════════════════ */
 
+// ── API Configuration ──────────────────────────────────────────────
+// Set this to your Railway backend URL for production deployment.
+// Leave empty for local development (same-origin).
+const API_BASE = ''; // e.g. 'https://autovendor-ai-production.up.railway.app'
+
 // ── State ──────────────────────────────────────────────────────────
 let currentStep = 1;
 let features = [];
@@ -172,7 +177,7 @@ async function runPipeline(payload) {
     }
 
     try {
-        const response = await fetch('/generate-pitch', {
+        const response = await fetch(`${API_BASE}/generate-pitch`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
